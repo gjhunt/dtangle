@@ -1,0 +1,122 @@
+---
+title: "Cell Type Deconvolution with dtangle"
+author: "Gregory Hunt"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic Deconvolution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  \VignetteDepends{dtangle.data}
+---
+
+We can show a basic deconvolution example by working with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). A data set created from a subset of the Shen-Orr data set is included with the package as ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://umich.box.com/v/dtangledatapkg). 
+
+The data set is called ``shen_orr_ex``. More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First we load up the data set. 
+```{r}
+library('dtangle')
+names(shen_orr_ex)
+```
+
+In this data set rat brain, liver and lung cells have been mixed together in various proportions the resulting mixtures were analyzed with DNA microarrays. The mixing proportions are encoded in the mixture matrix
+```{r}
+truth = shen_orr_ex$annotation$mixture
+head(truth)
+```
+Each row of this matrix is a sample and each column gives the mixing proportions of the cell type. From this we can extract out the pure samples of each of the three cell types. 
+```{r,cache=FALSE}
+pure_samples <- lapply(1:3, function(i) {
+    which(truth[, i] == 1)
+})
+names(pure_samples) = colnames(truth)
+pure_samples
+```
+
+The RMA-summarized gene expression data generated as part of the Shen-Orr experiment is accessible under ``data$log``,
+
+```{r}
+Y <- shen_orr_ex$data$log
+Y[1:4,1:4]
+```
+Each row is a different individual and each column is a particular gene. The values of the matrix are $\log_2$ RMA-summarized gene expressions. 
+
+The first step in running dtangle is to identify marker genes for each cell type. These may be provided by the scientist if they are already known or may be determined by dtangle or another algorithm. To find marker genes using dtangle we pass in the data matrix, ``Y``, the list of pure samples for each type, ``pure_samples``, the data type, ``data_type``, and the method used to rank markers, ``marker_method``, to the function ``find_markers``. The default ``marker_method`` is "ratio".
+```{r}
+marker_list = find_markers(Y,pure_samples,data_type="microarray-gene",marker_method='ratio')
+```
+The function ``find_markers`` returns a list of two elements. The first is ``L`` which is a list of the same length as ``pure_samples`` with the $i^{th}$ element being markers (columns of $Y$) for the $i^{th}$ type ranked in decreasing order of utility (best markers listed first) according to the chosen method. 
+```{r}
+lapply(marker_list$L,head)
+```
+The second element of the list ``find_markers`` is a list of the same structure named ``V``. This list contains the computed value for each gene used to rank the genes in their utility as markers. Larger values always mean better. The order of the values correspond exactly to the columns of $Y$ specified in the list ``L``. The meaning of this value depends on the choice of ``marker_method``. For ``marker_method=ratio`` the values in ``V`` are the ratio of the estimated amount the particular gene is expressed in one cell type to how much that marker gene is expressed in all other cell types. In any case larger values of ``V`` are better. 
+```{r}
+lapply(marker_list$V,head)
+```
+
+After we have ranked our markers we need to determine how many markers to use for each cell type. The simplest way to do this is to choose, say, the top 10% of all marker genes for each type.
+```{r}
+q = .1
+quantiles = lapply(marker_list$V,function(x)quantile(x,1-q))
+K = length(pure_samples)
+n_choose = sapply(1:K,function(i){max(which(marker_list$V[[i]] > quantiles[[i]]))})
+```
+for this example the number we choose to keep for each cell type is assigned to ``n_choose``,
+```{r}
+n_choose
+```
+
+Now that we have ranked our markers for each type and chosen how many to use for each type we can run the deconvolution algorithm.
+```{r}
+marks = marker_list$L
+dc <- dtangle(Y,pure_samples,n_choose,data_type='microarray-gene',markers=marks)
+```
+providing to the ``dtangle`` function ``Y``, our microarray data, the list of ``pure_samples``, the ``data_type``, the number of markers to use for each cell type, ``n_choose``, and the list of ranked markers (output from ``find_markers``) for each type to the ``markers`` argument. 
+The ``dtangle`` function returns to us a list with elements ``estimates``, the estimated mixing proportions for each type for each sample, ``markers``, the markers used for each cell type, ``n_choose``, how many markers we used for each cell type, and ``gamma``, the value of the sensitivity parameter used. 
+```{r}
+dc
+```
+
+We can plot our estimates against the known truth as follows
+```{r,results='asis',fig.height=5,fig.width=5}
+phats <- dc$estimates
+plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
+abline(coef=c(0,1))
+```
+
+If we want we can specify the value of the sensivity parameter ``gamma`` specificaly instead of choosing it based upon the ``data_type``. For example, 
+```{r,results='asis',fig.height=5,fig.width=5}
+dc <- dtangle(Y,pure_samples,n_choose,gamma=.7,markers=marks)
+phats <- dc$estimates
+plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
+abline(coef=c(0,1))
+```
+
+We can view the pre-selected values for ``gamma`` from the function ``get_gamma``
+```{r}
+get_gamma('microarray-probe')
+get_gamma('microarray-gene')
+get_gamma('rna-seq')
+```
+We can also specify the number of markers to be the same for each cell type by providing a single number to ``n_choose``
+```{r,results='asis',fig.height=5,fig.width=5}
+dc <- dtangle(Y,pure_samples,n_choose=5,data_type='microarray-gene',markers=marks)
+phats <- dc$estimates
+plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
+abline(coef=c(0,1))
+```
+
+We can test different methods of choosing markers by specifying the ``marker_method`` argument. Notice that if we don't calculate the list ``markers`` in advance then dtangle handles the markers internally. Description of the marker choosing methods can be found in the help pages for dtangle.
+```{r,results='asis',fig.height=5,fig.width=5}
+dc <- dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'ratio')
+phats <- dc$estimate
+plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
+abline(coef=c(0,1))
+
+dc2 <- dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'diff')
+phats2 <- dc2$estimates
+points(truth,phats2,col='blue')
+
+dc3 <- dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'regression')
+phats3 <- dc3$estimates
+points(truth,phats3,col='red')
+```
