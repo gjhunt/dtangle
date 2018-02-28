@@ -9,5 +9,6 @@ The scripts for the analysis in our paper can be found [here](https://umich.box.
 # Vignettes
 
 Bulk RNA-seq and microarrays: [here](vign/basic-deconvolution.md) ([html](vign/basic-deconvolution.html) [rmd](https://github.com/gjhunt/dtangle/blob/master/vign/basic-deconvolution.Rmd))
+
 Using single-cell RNA-seq as references: [here](vign/sc_vignette.md) ([html](https://github.com/gjhunt/dtangle/blob/master/vign/sc_vignette.html) [rmd](https://github.com/gjhunt/dtangle/blob/master/vign/sc_vignette.Rmd))
 
