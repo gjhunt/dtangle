@@ -2,7 +2,9 @@
 title: "dtangle with scRNA-seq reference"
 author: "Saskia Freytag and Greg Hunt"
 date: "20/02/2018"
-output: html_document
+output:
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}

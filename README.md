@@ -6,3 +6,9 @@ A package dtangle.data of benchmark deconvolution data sets can be found [here](
 
 The scripts for the analysis in our paper can be found [here](https://umich.box.com/v/dtangleanalysis).
 
+# Vignettes
+
+Bulk RNA-seq and microarrays: [html]() [rmd]()
+
+Using single-cell RNA-seq as references: [here](vign/sc_vignette.md) [html](https://github.com/gjhunt/dtangle/blob/master/vign/sc_vignette.html) [rmd](https://github.com/gjhunt/dtangle/blob/master/vign/sc_vignette.Rmd)
+
