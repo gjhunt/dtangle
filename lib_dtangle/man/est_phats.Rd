@@ -4,20 +4,37 @@
 \alias{est_phats}
 \title{Estimate the gene type proportions.}
 \usage{
-est_phats(Y, markers, baseline_ests, gamma)
+est_phats(Y, markers, baseline_ests, gamma, inv_scale = function(x) 2^x)
 }
 \arguments{
 \item{Y}{The expression matrix. Data frame or matrix. Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals.}
 
-\item{markers}{Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type. If not supplied to dtangle then markers will be determined internally by dtangle using \code{\link{find_markers}}.}
+\item{markers}{Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type.}
 
 \item{baseline_ests}{List of vectors (same structure as markers). One list entry for each cell type. Each list element is a vector of estimated offset for each marker of the respective type (output from \code{baseline_exprs}).}
 
-\item{gamma}{Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the ``data_type`` option.}
+\item{gamma}{Expression sensitivity parameter. A single positive number.}
+
+\item{inv_scale}{Inverse scale transformation. Default to exponential as dtangle assumes data has been logarithmically transformed.}
 }
 \value{
 Estimated matrix of mixing proportions.
 }
 \description{
 Estimate the gene type proportions.
+}
+\examples{
+truth = shen_orr_ex$annotation$mixture
+pure_samples <- lapply(1:3, function(i) {
+   which(truth[, i] == 1)
+})
+Y <- shen_orr_ex$data$log
+markers = find_markers(Y,pure_samples,data_type='microarray-gene',marker_method='ratio')$L
+K = length(pure_samples)
+n_choose = rep(20,K)
+mrkrs <- lapply(1:K, function(i) {
+       markers[[i]][1:n_choose[i]]
+})
+baseline = baseline_exprs(Y, pure_samples, mrkrs)
+phats <- est_phats(Y, mrkrs, baseline, gamma=.8)
 }

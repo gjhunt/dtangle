@@ -4,8 +4,8 @@
 \alias{dtangle}
 \title{Deconvolve cell type mixing proportions from gene expression data.}
 \usage{
-dtangle(Y, pure_samples, n_choose, data_type = NULL, gamma = NULL,
-  markers = NULL, marker_method = "ratio")
+dtangle(Y, pure_samples, n_choose = NULL, data_type = NULL, gamma = NULL,
+  markers = NULL, marker_method = "ratio", inv_scale = function(x) 2^x)
 }
 \arguments{
 \item{Y}{The expression matrix. Data frame or matrix. Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals.}
@@ -16,16 +16,19 @@ dtangle(Y, pure_samples, n_choose, data_type = NULL, gamma = NULL,
 
 \item{data_type}{A string indicating the type of the expression measurements. Used to choose pre-estimated gamma value. Current support for probe-level microarray as ``microarray-probe'', gene-level microarray as ``microarray-gene'' or rna-seq as ``rna-seq''.}
 
-\item{gamma}{Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the ``data_type`` option.}
+\item{gamma}{Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the value of gamma chosen by the data_type argument.}
 
-\item{markers}{Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type. If not supplied to dtangle then markers will be determined internally by dtangle using \code{\link{find_markers}}.}
+\item{markers}{Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type. If not supplied then dtangle finds markers internally using find_markers. Alternatively, one can supply the output of find_markers to the markers argument.}
 
-\item{marker_method}{The method used to determine which measurements are markers. Options are
+\item{marker_method}{The method used to determine which genes are markers. If not supplied defaults to ``ratio''. Only used if markers are not provided to argument ``markers''. Options are
 \itemize{
 \item{'ratio'}{ selects and ranks markers by the ratio of the mean expression of each gene in each cell type to the mean of that gene in all other cell types.}
 \item{'regression '}{ selects and ranks markers by estimated regression coefficients in a series of regressions with single covariate that is indicator of each type.}
 \item{'diff'}{ selects and ranks markers based upon the difference, for each cell type, between the median expression of a gene by each cell type and the median expression of that gene by the second most highly expressed cell type.}
+\item{'p.value'}{ selects and ranks markers based upon the p-value of a t-test between the median expression of a gene by each cell type and the median expression of that gene by the second most highly expressed cell type.}
 }}
+
+\item{inv_scale}{Inverse scale transformation. Default to exponential as dtangle assumes data has been logarithmically transformed.}
 }
 \value{
 List.
@@ -38,6 +41,19 @@ List.
 }
 \description{
 Deconvolve cell type mixing proportions from gene expression data.
+}
+\examples{
+truth = shen_orr_ex$annotation$mixture
+pure_samples <- lapply(1:3, function(i) {
+   which(truth[, i] == 1)
+})
+Y <- shen_orr_ex$data$log
+n_choose = 20
+
+dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'ratio')
+
+n_choose = c(10,11,12)
+dtangle(Y, pure_samples,n_choose,gamma=.8,marker_method = 'regression')
 }
 \seealso{
 \code{\link{find_markers}}

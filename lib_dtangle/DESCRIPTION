@@ -1,6 +1,6 @@
 Package: dtangle
 Title: Cell Type Deconvolution from Gene Expressions
-Version: 0.1.0
+Version: 0.2.2
 Description: Deconvolving cell types from high-throughput gene profiling data. 
 Date: 2017-05-24
 Author: Gregory Hunt

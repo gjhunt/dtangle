@@ -14,13 +14,14 @@ find_markers(Y, pure_samples, data_type = NULL, gamma = NULL,
 
 \item{data_type}{A string indicating the type of the expression measurements. Used to choose pre-estimated gamma value. Current support for probe-level microarray as ``microarray-probe'', gene-level microarray as ``microarray-gene'' or rna-seq as ``rna-seq''.}
 
-\item{gamma}{Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the ``data_type`` option.}
+\item{gamma}{Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the value of gamma chosen by the data_type argument.}
 
-\item{marker_method}{The method used to determine which measurements are markers. Options are
+\item{marker_method}{The method used to determine which genes are markers. If not supplied defaults to ``ratio''. Options are
 \itemize{
 \item{'ratio'}{ selects and ranks markers by the ratio of the mean expression of each gene in each cell type to the mean of that gene in all other cell types.}
 \item{'regression '}{ selects and ranks markers by estimated regression coefficients in a series of regressions with single covariate that is indicator of each type.}
 \item{'diff'}{ selects and ranks markers based upon the difference, for each cell type, between the median expression of a gene by each cell type and the median expression of that gene by the second most highly expressed cell type.}
+\item{'p.value'}{ selects and ranks markers based upon the p-value of a t-test between the median expression of a gene by each cell type and the median expression of that gene by the second most highly expressed cell type.}
 }}
 }
 \value{
@@ -28,4 +29,12 @@ List with two elements. ``L'' is respective ranked markers for each cell type an
 }
 \description{
 Find marker genes for each cell type.
+}
+\examples{
+truth = shen_orr_ex$annotation$mixture
+pure_samples <- lapply(1:3, function(i) {
+   which(truth[, i] == 1)
+})
+Y <- shen_orr_ex$data$log
+find_markers(Y,pure_samples,data_type='microarray-gene',marker_method='ratio')
 }

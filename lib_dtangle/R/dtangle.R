@@ -1,16 +1,18 @@
 #' Deconvolve cell type mixing proportions from gene expression data. 
 #' @param Y The expression matrix. Data frame or matrix. Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals. 
 #' @param pure_samples The pure sample indicies. List of vectors. The i-th element of the top-level list is a vector of indicies (rows of Y) that are pure samples of type i.
-#' @param data_type A string indicating the type of the expression measurements. Used to choose pre-estimated gamma value. Current support for probe-level microarray as ``microarray-probe'', gene-level microarray as ``microarray-gene'' or rna-seq as ``rna-seq''.
+#' @param data_type A string indicating the type of the expression measurements. Used to choose pre-estimated gamma value. Current support for probe-level microarray as ``microarray-probe'', gene-level microarray as ``microarray-gene'' or rna-seq as ``rna-seq''. 
 #' @param n_choose How many markers genes to use for deconvolution. Can either be a single integer or a vector of integers, one for each cell type. If a single integer then all cell types use that number of markers. If a vector then the i-th element determines how many marker genes are used for the i-th cell type. 
-#' @param gamma Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the ``data_type`` option.  
-#' @param markers Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type. If not supplied to dtangle then markers will be determined internally by dtangle using \code{\link{find_markers}}.  
-#' @param marker_method The method used to determine which measurements are markers. Options are
+#' @param gamma Expression sensitivity parameter. If provided as a single positive number then that value will be used for gamma and over-ride the value of gamma chosen by the data_type argument.  
+#' @param markers Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type. If not supplied then dtangle finds markers internally using find_markers. Alternatively, one can supply the output of find_markers to the markers argument. 
+#' @param marker_method The method used to determine which genes are markers. If not supplied defaults to ``ratio''. Only used if markers are not provided to argument ``markers''. Options are
 #' \itemize{
 #' \item{'ratio'}{ selects and ranks markers by the ratio of the mean expression of each gene in each cell type to the mean of that gene in all other cell types.}
 #' \item{'regression '}{ selects and ranks markers by estimated regression coefficients in a series of regressions with single covariate that is indicator of each type.}
 #' \item{'diff'}{ selects and ranks markers based upon the difference, for each cell type, between the median expression of a gene by each cell type and the median expression of that gene by the second most highly expressed cell type.}
+#' \item{'p.value'}{ selects and ranks markers based upon the p-value of a t-test between the median expression of a gene by each cell type and the median expression of that gene by the second most highly expressed cell type.}
 #' }
+#' @param inv_scale Inverse scale transformation. Default to exponential as dtangle assumes data has been logarithmically transformed. 
 #' @return List.
 #' \itemize{
 #' \item{'estimates'}{ a matrix estimated mixing proportions. One row for each observation, one column for each cell type.}
@@ -18,10 +20,22 @@
 #' \item{'n_choose'}{ vector of number of markers used for each cell type.}
 #' \item{'gamma'}{ value of the sensitivity parameter gamma used by dtangle.}
 #' }
+#' @examples
+#' truth = shen_orr_ex$annotation$mixture
+#' pure_samples <- lapply(1:3, function(i) {
+#'    which(truth[, i] == 1)
+#' })
+#' Y <- shen_orr_ex$data$log
+#' n_choose = 20
+#'
+#' dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'ratio')
+#'
+#' n_choose = c(10,11,12)
+#' dtangle(Y, pure_samples,n_choose,gamma=.8,marker_method = 'regression')
 #' @seealso \code{\link{find_markers}}
 #' @export
-dtangle <- function(Y, pure_samples, n_choose, data_type = NULL, gamma = NULL, markers = NULL, 
-    marker_method = "ratio") {
+dtangle <- function(Y, pure_samples, n_choose = NULL, data_type = NULL, gamma = NULL, 
+    markers = NULL, marker_method = "ratio", inv_scale = function(x) 2^x) {
     
     stopifnot(all(n_choose > 0))
     stopifnot(!is.null(c(data_type, gamma)))
@@ -37,14 +51,20 @@ dtangle <- function(Y, pure_samples, n_choose, data_type = NULL, gamma = NULL, m
     
     if (is.null(markers)) {
         markers <- find_markers(Y, pure_samples, data_type = data_type, gamma = gamma, 
-            marker_method = marker_method)$L
+            marker_method = marker_method)
     }
-    mrkrs <- lapply(1:K, function(i) {
-        markers[[i]][1:n_choose[i]]
-    })
+    markers <- get_marker_list(markers)
+    if (is.null(n_choose)) {
+        n_choose <- lengths(markers)
+        mrkrs <- markers
+    } else {
+        mrkrs <- lapply(1:K, function(i) {
+            markers[[i]][1:n_choose[i]]
+        })
+    }
     
     baseline <- baseline_exprs(Y, pure_samples, mrkrs)
-    phats <- est_phats(Y, mrkrs, baseline, gamma)
+    phats <- est_phats(Y, mrkrs, baseline, gamma, inv_scale)
     
     return(list(estimates = phats, markers = mrkrs, n_choose = n_choose, gamma = gamma))
 }

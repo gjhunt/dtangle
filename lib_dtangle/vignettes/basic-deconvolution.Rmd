@@ -1,5 +1,5 @@
 ---
-title: "Cell Type Deconvolution with dtangle"
+title: "Cell type deconvolution with dtangle"
 author: "Gregory Hunt"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -12,7 +12,7 @@ vignette: >
 
 ## A Basic Deconvolution Example
 
-In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://umich.box.com/v/dtangledatapkg). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First load up the data set. 
+In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://umich.box.com/v/dtangledatapkg). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
 ```{r}
 library('dtangle')
 names(shen_orr_ex)
@@ -25,11 +25,7 @@ head(truth)
 ```
 Each row of this matrix is a sample and each column gives the mixing proportions of the cell types in each sample. From this we can extract out the pure samples of each of the three cell types. 
 ```{r,cache=FALSE}
-pure_samples <- lapply(1:3, function(i) {
-    which(truth[, i] == 1)
-})
-names(pure_samples) = colnames(truth)
-pure_samples
+pure_samples = shen_orr_ex$annotation$pure_samples
 ```
 
 The RMA-summarized gene expression data generated as part of the Shen-Orr experiment is accessible under ``data$log``,
@@ -74,7 +70,7 @@ n_choose
 
 Now that we have ranked the genes as markers for each type and chosen how many marker genes to use for each cell type we can run the ``dtangle`` deconvolution algorithm.
 ```{r}
-marks = marker_list$L
+marks = marker_list
 dc <- dtangle(Y,pure_samples,n_choose,data_type='microarray-gene',markers=marks)
 ```
 providing to the ``dtangle`` function the arguments:
