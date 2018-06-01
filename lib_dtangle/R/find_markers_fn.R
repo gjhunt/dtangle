@@ -18,7 +18,7 @@
 #' @export
 find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker_method = "ratio") {
     if (any(lengths(pure_samples) == 1) & marker_method == "p.value") {
-        message("Can't use p.value method. Using simple differences.")
+        stop("Can't use p.value method.")
         marker_method <- "diff"
     }
     if (is.null(gamma)) 
@@ -68,7 +68,7 @@ find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker
                     stop("Non-finite")
                   tmp
                 }, error = function(e) {
-                  0
+                  stop(paste("Can't compute p-value for observation", i))
                 })
             }
             return(pvs)
