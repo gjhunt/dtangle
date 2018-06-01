@@ -17,7 +17,7 @@
 #' find_markers(Y,pure_samples,data_type='microarray-gene',marker_method='ratio')
 #' @export
 find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker_method = "ratio") {
-    if (any(lengths(pure_samples)) == 1 & marker_method == "p.value") {
+    if (any(lengths(pure_samples) == 1) & marker_method == "p.value") {
         message("Can't use p.value method. Using simple differences.")
         marker_method <- "diff"
     }
