@@ -1,5 +1,5 @@
 #' Find marker genes for each cell type.
-#' @return List with two elements. ``L'' is respective ranked markers for each cell type and ``V'' is the corresponding values of the ranking method (higher are better) used to determine markers and sort them.
+#' @return List with three elements. ``L'' is respective ranked markers for each cell type and ``V'' is the corresponding values of the ranking method (higher are better) used to determine markers and sort them, and ``M'' is the matrix used to create the other two arguments after sorting and subsetting.
 #' @inheritParams dtangle
 #' @param marker_method The method used to determine which genes are markers. If not supplied defaults to ``ratio''. Options are
 #' \itemize{
@@ -18,7 +18,7 @@
 #' @export
 find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker_method = "ratio") {
     if (any(lengths(pure_samples) == 1) & marker_method == "p.value") {
-        stop("Can't use p.value method.")
+        message("Can't use p.value method.")
         marker_method <- "diff"
     }
     if (is.null(gamma)) 
@@ -54,7 +54,7 @@ find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker
         C <- apply(C, 2, less_second)
     } else if (marker_method == "p.value") {
         for (i in 1:K) {
-            C[i, ] <- apply(Y[pure_samples[[i]], , drop = FALSE], 2, stats::median)
+            C[i, ] <- apply(Y[pure_samples[[i]], , drop = FALSE], 2, mean)
         }
         calc_pvals <- function(i) {
             x <- C[, i]
@@ -62,15 +62,22 @@ find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker
             pvs <- rep(NA, length(x))
             for (j in 1:length(x)) {
                 pvs[j] <- tryCatch({
-                  tmp <- 1 - stats::t.test(Y[pure_samples[[j]], i], Y[pure_samples[[second]], 
-                    i], alternative = "two.sided")$p.value
-                  if (!is.finite(tmp)) 
-                    stop("Non-finite")
+                  x1 <- Y[pure_samples[[j]], i]
+                  x2 <- Y[pure_samples[[second]], i]
+                  if (stats::var(x1) > 0 || stats::var(x2) > 0) {
+                    tmp <- 1 - stats::t.test(x1, x2, alternative = "two.sided", var.equal = TRUE)$p.value
+                    if (!is.finite(tmp)) 
+                      tmp <- 0
+                  } else {
+                    tmp <- 1
+                  }
                   tmp
                 }, error = function(e) {
                   stop(paste("Can't compute p-value for observation", i))
                 })
             }
+            top <- which(x == max(x))[1]
+            pvs[-top] <- 0
             return(pvs)
         }
         C <- sapply(1:ncol(C), calc_pvals)
@@ -78,8 +85,8 @@ find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker
         stop("Marker method not found.")
     }
     pick_top <- function(x) {
-        m <- which(x == max(x))
-        if (length(m) > 1) 
+        m <- which(x == max(x, na.rm = TRUE))
+        if (length(m) != 1) 
             return(c(NA, NaN))
         return(c(m, x[m]))
     }
@@ -95,5 +102,5 @@ find_markers <- function(Y, pure_samples, data_type = NULL, gamma = NULL, marker
     V <- lapply(1:K, function(i) {
         sM[sM$top == i, "value"]
     })
-    return(list(L = L, V = V))
+    return(list(L = L, V = V, M = M))
 }

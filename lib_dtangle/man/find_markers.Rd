@@ -25,7 +25,7 @@ find_markers(Y, pure_samples, data_type = NULL, gamma = NULL,
 }}
 }
 \value{
-List with two elements. ``L'' is respective ranked markers for each cell type and ``V'' is the corresponding values of the ranking method (higher are better) used to determine markers and sort them.
+List with three elements. ``L'' is respective ranked markers for each cell type and ``V'' is the corresponding values of the ranking method (higher are better) used to determine markers and sort them, and ``M'' is the matrix used to create the other two arguments after sorting and subsetting.
 }
 \description{
 Find marker genes for each cell type.
