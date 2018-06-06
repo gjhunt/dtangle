@@ -1,0 +1,71 @@
+---
+title: "PBMC Deconvolution"
+author: "Greg Hunt"
+date: "June 6, 2018"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+There is a good reference for PBMCs from a 2015 paper by Newman et al. They call the reference LM22. You can access this data as part of the dtangle.data package available through our webpage: http://dtangle.github.io 
+
+First we load the packages
+```{r}
+library('dtangle')
+library('dtangle.data')
+library('limma')
+```
+then we can load the Newman PBMC data set
+```{r}
+dset = newman_pbmc
+```
+then load gene expressions (data) and mixture proportions (mix)
+```{r}
+data = dset$data$log
+data[1:5,1:5]
+mix = dset$annotation$mixture
+mix[1:5,1:5]
+```
+the first 20 rows of data are gene exprs from heterogeneous mixtures to be deconvolved. The remaining rows are references for each of several PBMC cell types (B, NK, T, etc). Because there are so many cell types we collapse some of the sub-types into a fewer number of general leukocyte types:
+```{r}
+general_types = factor(sapply(strsplit(colnames(mix)," "),"[",1))
+mix = sapply(levels(general_types),function(g)rowSums(mix[,general_types==g,drop=FALSE]))
+```
+
+We can extract out which rows are pure reference samples:
+```{r}
+pure_samples = lapply(1:ncol(mix),function(i)which(mix[,i]==1))
+names(pure_samples) = colnames(mix)
+lapply(pure_samples,head,n=2)
+```
+and use those to deconvolve the other samples
+
+```{r}
+dt = dtangle(Y=data,pure_samples=pure_samples,n_choose = 100,data_type='microarray-gene')
+matplot(mix[-unlist(pure_samples),],dt$estimates[-unlist(pure_samples),],xlab="truth",ylab="estimate",
+        ylim=c(0,1),xlim=c(0,1));abline(coef=c(0,1),col='orange')
+```
+
+Since the cell types in the mixtures are known in this case we can subset the cell types to only look for to those cell types that we know exist in the data. First we determine what cell types are present and subset the data appropriately,
+```{r}
+known_types = colnames(mix)[colSums(mix[1:20,])>0]
+known_types
+```
+
+```{r}
+keep_rows = c(1:20,unlist(pure_samples[known_types]))
+data = data[keep_rows,]
+mix = mix[keep_rows,known_types]
+pure_samples = lapply(1:ncol(mix),function(i)which(mix[,i]==1))
+names(pure_samples) = colnames(mix)
+```
+and then run dtangle on the subsetted data
+```{r}
+dt = dtangle(Y=data,pure_samples=pure_samples,n_choose = 100,data_type='microarray-gene')
+matplot(mix[-unlist(pure_samples),],dt$estimates[-unlist(pure_samples),],xlab="truth",ylab="estimate",
+        ylim=c(0,1),xlim=c(0,1));abline(coef=c(0,1),col='orange')
+```
