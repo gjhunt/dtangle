@@ -124,7 +124,7 @@ lapply(pure_samples,head,n=2)
 and use those to deconvolve the other samples
 
 ``` r
-dt = dtangle(Y=data,pure_samples=pure_samples,n_choose = 100,data_type='microarray-gene')
+dt = dtangle(Y=data,pure_samples=pure_samples,n_markers = 100,data_type='microarray-gene')
 matplot(mix[-unlist(pure_samples),],dt$estimates[-unlist(pure_samples),],xlab="truth",ylab="estimate",
         ylim=c(0,1),xlim=c(0,1));abline(coef=c(0,1),col='orange')
 ```
@@ -151,7 +151,7 @@ names(pure_samples) = colnames(mix)
 and then run dtangle on the subsetted data
 
 ``` r
-dt = dtangle(Y=data,pure_samples=pure_samples,n_choose = 100,data_type='microarray-gene')
+dt = dtangle(Y=data,pure_samples=pure_samples,n_markers = 100,data_type='microarray-gene')
 matplot(mix[-unlist(pure_samples),],dt$estimates[-unlist(pure_samples),],xlab="truth",ylab="estimate",
         ylim=c(0,1),xlim=c(0,1));abline(coef=c(0,1),col='orange')
 ```

@@ -7,7 +7,11 @@
 get_gamma(data_type)
 }
 \arguments{
-\item{data_type}{A string indicating the type of the expression measurements. Used to choose pre-estimated gamma value. Current support for probe-level microarray as ``microarray-probe'', gene-level microarray as ``microarray-gene'' or rna-seq as ``rna-seq''.}
+\item{data_type}{Type of expression measurements.
+
+(Optional) One-dimensional string. 
+
+An optional string indicating the type of the expression measurements. This is used to set gamma to a pre-determined value based upon the data type. Valid values are for probe-level microarray as ``microarray-probe'', gene-level microarray as ``microarray-gene'' or rna-seq as ``rna-seq''. Alternatively can set \code{gamma} directly.}
 }
 \description{
 Determine gamma value by data type.

@@ -1,16 +1,19 @@
 ---
-title: "Cell type deconvolution with dtangle"
-author: "Gregory Hunt"
+title: "Basic Deconvolution using dtangle"
+author: "Greg Hunt"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Basic Deconvolution}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  \VignetteDepends{dtangle.data}
 ---
 
-## A Basic Deconvolution Example
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The Data
 
 In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://umich.box.com/v/dtangledatapkg). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
 ```{r}
@@ -20,13 +23,9 @@ names(shen_orr_ex)
 
 In this data set rat brain, liver and lung cells have been mixed together in various proportions the resulting mixtures were analyzed with DNA microarrays. The mixing proportions are encoded in the mixture matrix
 ```{r}
-truth = shen_orr_ex$annotation$mixture
-head(truth)
+head(shen_orr_ex$annotation$mixture)
 ```
-Each row of this matrix is a sample and each column gives the mixing proportions of the cell types in each sample. From this we can extract out the pure samples of each of the three cell types. 
-```{r,cache=FALSE}
-pure_samples = shen_orr_ex$annotation$pure_samples
-```
+Each row of this matrix is a sample and each column gives the mixing proportions of the cell types in each sample. 
 
 The RMA-summarized gene expression data generated as part of the Shen-Orr experiment is accessible under ``data$log``,
 
@@ -36,120 +35,161 @@ Y[1:4,1:4]
 ```
 Each row is a different individual and each column is a particular gene. The values of the matrix are $\log_2$ RMA-summarized gene expressions. 
 
-The first step in running ``dtangle`` is to identify marker genes for each cell type. These may be provided by the scientist if they are already known or may be determined by ``dtangle`` or another algorithm. To find marker genes using ``dtangle`` we pass the following arugments to the ``find_markers`` function:
+# Arguments
 
-1. the data matrix, ``Y``, 
+The arguments to dtangle can be grouped as follows. First are the the two most important groups of arguments: 
 
-2. the list of pure samples for each type, ``pure_samples``, 
+1. gene expression data input: Y, references, and pure\_samples
+2. marker gene controls: n\_markers, markers and marker\_method
 
-3. the data type, ``data_type``, 
+and then the less important arguments for more fine-tuned control:
 
-4. the method used to rank markers, ``marker_method``.
+3. data type fudge-factor controls: gamma and data\_type
+4. the summarizing function: summary\_fn
 
+# 1. Y, references, and pure\_samples
+
+In order to deconvolve gene expression data from mixture samples dtangle requires references of the cell-types to be deconvolved. The mixture gene expressions and reference gene expressions are given to dtangle using the arguments Y, references, and pure\_samples.
+
+Here we use some data from [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html) as an example. This data consists of log-scale expression measurements from mixtures of rat brain, liver and lung cells. 
+```{r}
+library('dtangle')
+data = shen_orr_ex$data$log
+mixture_proportions = shen_orr_ex$annotation$mixture
+```
+the true mixing proportion of each sample captured in the variable mixture\_proportions: 
+```{r}
+mixture_proportions
+```
+we can see from this that the first nine samples are pure reference samples of the three cell types and the remaining samples are mixture samples of the cell types. We want to use these reference samples to deconvolve the remaining mixture samples. This can be done in a couple of ways: 
+
+1. We can provide Y and pure\_samples to dtangle. Here Y will be the combined matrix of reference and mixture samples and pure\_samples will tell dtangle which samples (rows of Y) are reference samples and (by elimination) which samples are mixture samples we wish to deconvolve. 
+```{r}
+pure_samples = list(Liver=c(1,2,3),Brain=c(4,5,6),Lung=c(7,8,9))
+
+dt_out = dtangle(Y=data, pure_samples = pure_samples)
+
+matplot(mixture_proportions,dt_out$estimates, xlim = c(0,1),ylim=c(0,1),xlab="Truth",ylab="Estimates")
+```
+
+2. We can instead split the data into Y as just the matrix of mixture samples and references as the matrix of reference expressions. 
+```{r}
+mixture_samples = data[-(1:9),]
+reference_samples = data[1:9,]
+
+dt_out = dtangle(Y=mixture_samples, reference=reference_samples,pure_samples = pure_samples)
+
+mixture_mixture_proportions = mixture_proportions[-(1:9),]
+matplot(mixture_mixture_proportions,dt_out$estimates, xlim = c(0,1),ylim=c(0,1),xlab="Truth",ylab="Estimates")
+```
+
+Now the variable pure\_samples tells dtangle what cell type each of the the rows of the references matrix corresponds to. Notice that dtangle only estimates the mixing proportions for the samples given in the Y argument and so since we have removed the references samples from the matrix passed to Y then we only estimate the mixing proportions for the remaining 33 mixture samples. Previously we had estimated proportions for both the mixture and reference samples.
+
+In this example we still needed the variable pure\_samples because our reference expression matrix contained multiple reference profiles for each cell type. Often one only has a reference expression matrix with one (typically average) expression profile per cell type. In this case we don't need the pure\_samples argument:
+```{r}
+ref_reduced = t(sapply(pure_samples,function(x)colMeans(reference_samples[x,,drop=FALSE])))
+
+dt_out = dtangle(Y=mixture_samples, reference=ref_reduced)
+
+matplot(mixture_mixture_proportions,dt_out$estimates, xlim = c(0,1),ylim=c(0,1),xlab="Truth",ylab="Estimates")
+```
+
+# 2. n\_markers, markers and marker\_method
+
+Central to dtangle is finding marker genes for each cell type. Markers may either be given explicitly to dtangle by the user or they may be left up to dtangle itself to determine the marker genes automatically. 
+
+## Letting dtangle determine the marker genes. 
+If we do not specify the argument markers then dtangle automatically determines marker genes: 
+```{r}
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced)
+```
+
+we can change the way that dtangle finds marker genes using the marker\_method argument: 
+```{r}
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced,marker_method = "diff")
+```
+the default is to use "ratio". 
+
+The argument n\_markers specifies how many marker genes to use. If unspecified then dtangle uses the top 10\% of genes (as ranked according to marker\_method) as markers. 
+```{r}
+dt_out$n_markers
+```
+The number of marker genes can be explicitly specified by setting n\_markers: 
+```{r}
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=100)
+
+dt_out$n_markers
+```
+if just a single integer is specified then all genes us that number of marker genes. Alternatively we can specify a vector of integers to specify a number of marker genes individually for each cell type:
+```{r}
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=c(100,150,50))
+
+dt_out$n_markers
+```
+
+we can also, in a similar fashion, pass a percentage (or vector of percentages) to n\_markers which will then use that percentage of the ranked marker genes for each cell type: 
+```{r}
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=.075)
+
+dt_out$n_markers
+
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=c(.1,.15,.05))
+
+dt_out$n_markers
+```
+
+## Specifying the marker genes explicitly. 
+
+Instead of letting dtangle determine the marker genes we can instead explicitly pass a list of markers to dtangle specifying the marker genes,
+```{r}
+marker_genes = list(c(120,253,316),
+                    c(180,429,14),
+                    c(1,109,206))
+
+dt_out = dtangle(Y=mixture_samples, references = ref_reduced,markers=marker_genes)
+dt_out$n_markers
+```
+the format of the list is precisely the same format as returned in the markers element of the output of dtangle, that is, a list of vectors of column indicies of $Y$ that are markers of each of the cell types. The elements of the list correspond one to each cell type in the same order specified either in elements of pure\_samples or by the rows of references. The argument of n\_markers can be used in the same way to subset the markers if desired. 
+
+## How dtangle finds markers
+
+dtangle finds the marker genes by using the find\_markers function.
+```{r}
+mrkrs = find_markers(Y=mixture_samples, references = ref_reduced)
+names(mrkrs)
+```
+which returns a list with four elements L which contains all genes putatively assigned to a cell type they mark, V which contains the ranking values by which the elements of L are ordered, M and sM which are the matrix and sorted matrix used to create V and L. 
+
+We can pass either the entire list or just the L list to dtangle as markers and re-create how dtangle automatically chooses markers: 
+```{r}
+dt_out = dtangle(Y = mixture_samples,references = ref_reduced,markers=mrkrs,n_markers=.1)
+```
+
+# 3. gamma and data\_type
+
+A unique aspect of dtangle is its parameter $\gamma$. This is a fudge factor dtangle applies to account for imperfect mRNA quantification, especially for microarrays. The value of $\gamma$ can be specified through the argument gamma or data\_type. 
+
+We can explicitly set gamma if we want, 
+```{r}
+dt_out = dtangle(Y = mixture_samples,references = ref_reduced,gamma=.9)
+```
+or we can set it a pre-defined value by passing the data\_type argument which sets $\gamma$ automatically based upon the data type:
+```{r}
+dt_out = dtangle(Y = mixture_samples,references = ref_reduced,data_type="microarray-gene")
+```
+the options for $\gamma$ are 
+```{r}
+dtangle:::gma
+```
+if neither gamma nor data\_type are specified then dtangle sets $\gamma$ to one. If there is no intuition about either the data type or a good value of $\gamma$ then we recommend leaving $\gamma$ at one. 
+
+# 4. summary\_fn
+
+There is a final optional parameter summary\_fn which controls how dtangle aggregates the gene expressions for estimation. dtangle is a very robust algorithm and so the default summary function is the mean. One can specify the median as a more robust option, or any other summary statistic if so they desire. We recommend either the mean or the median. 
 
 ```{r}
-marker_list = find_markers(Y,pure_samples,data_type="microarray-gene",marker_method='ratio')
-```
-The function ``find_markers`` will determine which genes to use as markers of each cell type. The function returns a list of two elements. The first element is ``L`` which is a list where the $i^{th}$ element is a vector of marker indices (columns of $Y$) for the $i^{th}$ type ranked in decreasing order of utility (best markers listed first) according to the chosen method. 
-```{r}
-lapply(marker_list$L,head)
-```
-The second element of the list returned by ``find_markers`` is a list ``V`` (with the same structure as ``L``). For each of the indices in ``L`` the list ``V`` contains the marker score as determined by the method utilized in ``find_markers``. Larger values are better. The meaning of this value in ``V`` depends on the choice of ``marker_method``. For ``marker_method=ratio`` (the default method) the values in ``V`` are the ratio of the estimated amount the particular gene is expressed in each cell type over the sum of the expression of this gene in all other cell types. 
-```{r}
-lapply(marker_list$V,head)
-```
-
-After we have ranked our markers with ``find_markers`` we need to determine how many markers to use for each cell type. The simplest way to do this is to choose, say, the top 10% of all marker genes for each type.
-```{r}
-q = .1
-quantiles = lapply(marker_list$V,function(x)quantile(x,1-q))
-K = length(pure_samples)
-n_choose = sapply(1:K,function(i){max(which(marker_list$V[[i]] > quantiles[[i]]))})
-n_choose
-```
-
-Now that we have ranked the genes as markers for each type and chosen how many marker genes to use for each cell type we can run the ``dtangle`` deconvolution algorithm.
-```{r}
-marks = marker_list
-dc <- dtangle(Y,pure_samples,n_choose,data_type='microarray-gene',markers=marks)
-```
-providing to the ``dtangle`` function the arguments:
-
-1. ``Y``, our microarray data 
-
-2. the list of ``pure_samples`` 
-
-3. the number of markers to use for each cell type, ``n_choose``
-
-4. the ``data_type``
-
-5. the list of ranked markers (output from ``find_markers``) to the ``markers`` argument. 
-
-
-The ``dtangle`` function returns to us a list with elements 
-
-1. ``estimates``, the estimated mixing proportions for each type for each sample
-
-2. ``markers``, the markers used for each cell type
-
-3. ``n_choose``, how many markers we used for each cell type
-
-4. ``gamma``, the value of the sensitivity parameter used. 
-
-```{r}
-dc
-```
-
-We can plot our estimates against the known truth as follows
-```{r,results='asis',fig.height=5,fig.width=5}
-phats <- dc$estimates
-plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
-abline(coef=c(0,1))
-```
-
-If desired, we can specify the value of the sensivity parameter ``gamma`` numerically instead of letting ``dtangle`` choose it based upon the ``data_type``. For example, 
-```{r,results='asis',fig.height=5,fig.width=5}
-dc <- dtangle(Y,pure_samples,n_choose,gamma=.7,markers=marks)
-phats <- dc$estimates
-plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
-abline(coef=c(0,1))
-```
-
-We can view the pre-selected values for ``gamma`` for each data type by using the function ``get_gamma``
-```{r}
-get_gamma('microarray-probe')
-get_gamma('microarray-gene')
-get_gamma('rna-seq')
-```
-
-We can also specify the number of markers to be the same for each cell type by providing a single number to ``n_choose``
-```{r,results='asis',fig.height=5,fig.width=5}
-dc <- dtangle(Y,pure_samples,n_choose=5,data_type='microarray-gene',markers=marks)
-phats <- dc$estimates
-plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
-abline(coef=c(0,1))
-```
-
-Alternatively, we can manually specify the number of markers to use for each cell type manually,
-```{r,results='asis',fig.height=5,fig.width=5}
-dc <- dtangle(Y,pure_samples,n_choose=c(5,6,7),data_type='microarray-gene',markers=marks)
-phats <- dc$estimates
-plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
-abline(coef=c(0,1))
-```
-
-We can test different methods of choosing markers by specifying the ``marker_method`` argument. Notice that if we don't calculate the markers in advance (e.g. by using ``find_markers``) then ``dtangle`` handles the markers internally by using ``find_markers`` with ``method='ratio'``. A description of the marker choosing methods can be found in the help pages for ``dtangle``.
-```{r,results='asis',fig.height=5,fig.width=5}
-dc <- dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'ratio')
-phats <- dc$estimate
-plot(truth,phats,xlab="Truth",ylab="Estimates",xlim=c(0,1),ylim=c(0,1))
-abline(coef=c(0,1))
-
-dc2 <- dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'diff')
-phats2 <- dc2$estimates
-points(truth,phats2,col='blue')
-
-dc3 <- dtangle(Y, pure_samples,n_choose,data_type='microarray-gene',marker_method = 'regression')
-phats3 <- dc3$estimates
-points(truth,phats3,col='red')
+dt_out = dtangle(Y = mixture_samples,references = ref_reduced,summary_fn=median)
+head(dt_out$estimates)
+dt_out = dtangle(Y = mixture_samples,references = ref_reduced,summary_fn=mean)
+head(dt_out$estimates)
 ```

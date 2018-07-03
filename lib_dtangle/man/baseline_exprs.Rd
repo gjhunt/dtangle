@@ -4,14 +4,32 @@
 \alias{baseline_exprs}
 \title{Estimate the offset terms.}
 \usage{
-baseline_exprs(Y, pure_samples, markers)
+baseline_exprs(Y, pure_samples, markers, summary_fn = mean)
 }
 \arguments{
-\item{Y}{The expression matrix. Data frame or matrix. Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals.}
+\item{Y}{Expression matrix.
 
-\item{pure_samples}{The pure sample indicies. List of vectors. The i-th element of the top-level list is a vector of indicies (rows of Y) that are pure samples of type i.}
+(Required) Two-dimensional numeric. Must implement \code{as.matrix}.
 
-\item{markers}{Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type.}
+Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals. Can either contain just the mixture samples to be deconvolved or both the mixture samples and the reference samples. See \code{pure_samples} and \code{references} for more details.}
+
+\item{pure_samples}{The pure sample indicies.
+
+(Optional) List of one-dimensional integer. Must implement \code{as.list}.
+
+The i-th element of the top-level list is a vector of indicies (rows of \code{Y} or \code{references}) that are pure samples of type i. If \code{references} is not specified then this argument identifies which rows of \code{Y} correspond to pure reference samples of which cell-types. If \code{references} is specified then this makes same idenficiation but for the \code{references} matrix instead.}
+
+\item{markers}{Marker gene indices.
+
+(Optional) List of one-dimensional integer.
+
+Top-level list should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of \code{Y}) that will be considered markers of that particular type. If not supplied then \code{dtangle} finds markers internally using \code{find_markers}. Alternatively, one can supply the output of \code{find_markers} to the markers argument.}
+
+\item{summary_fn}{What summary statistic to use when aggregating expression measurements.
+
+(Optional) Function that takes a one-dimensional vector of numeric and returns a single numeric.
+
+Defaults to the mean. Other good options include the median.}
 }
 \value{
 List of vectors. Each vector is estimated estimated basline in pure samples of markers for each group, resp.
@@ -25,11 +43,12 @@ pure_samples <- lapply(1:3, function(i) {
    which(truth[, i] == 1)
 })
 Y <- shen_orr_ex$data$log
-markers = find_markers(Y,pure_samples,data_type='microarray-gene',marker_method='ratio')$L
+markers = find_markers(Y=Y,
+pure_samples = pure_samples,data_type='microarray-gene',marker_method='ratio')$L
 K = length(pure_samples)
-n_choose = rep(20,K)
+n_markers = rep(20,K)
 mrkrs <- lapply(1:K, function(i) {
-       markers[[i]][1:n_choose[i]]
+       markers[[i]][1:n_markers[i]]
 })
-baseline_exprs(Y, pure_samples, mrkrs)
+dtangle:::baseline_exprs(Y, pure_samples, mrkrs)
 }

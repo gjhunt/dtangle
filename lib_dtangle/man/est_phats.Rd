@@ -4,16 +4,35 @@
 \alias{est_phats}
 \title{Estimate the gene type proportions.}
 \usage{
-est_phats(Y, markers, baseline_ests, gamma, inv_scale = function(x) 2^x)
+est_phats(Y, markers, baseline_ests, gamma, summary_fn = mean,
+  inv_scale = function(x) 2^x)
 }
 \arguments{
-\item{Y}{The expression matrix. Data frame or matrix. Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals.}
+\item{Y}{Expression matrix.
 
-\item{markers}{Marker gene indices. List of vectors. List should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of Y) that will be considered markers of that particular type.}
+(Required) Two-dimensional numeric. Must implement \code{as.matrix}.
+
+Each row contains expression measurements for a particular sample. Each columm contains the measurements of the same gene over all individuals. Can either contain just the mixture samples to be deconvolved or both the mixture samples and the reference samples. See \code{pure_samples} and \code{references} for more details.}
+
+\item{markers}{Marker gene indices.
+
+(Optional) List of one-dimensional integer.
+
+Top-level list should be same length as \code{pure_samples}, i.e. one element for each cell type. Each element of the top-level list is a vector of indicies (columns of \code{Y}) that will be considered markers of that particular type. If not supplied then \code{dtangle} finds markers internally using \code{find_markers}. Alternatively, one can supply the output of \code{find_markers} to the markers argument.}
 
 \item{baseline_ests}{List of vectors (same structure as markers). One list entry for each cell type. Each list element is a vector of estimated offset for each marker of the respective type (output from \code{baseline_exprs}).}
 
-\item{gamma}{Expression sensitivity parameter. A single positive number.}
+\item{gamma}{Expression adjustment term.
+
+(Optional) One-dimensional positive numeric.
+
+If provided as a single positive number then that value will be used for \code{gamma} and over-ride the value of gamma chosen by the \code{data_type} argument. If neither \code{gamma} nor \code{data_type} are specified then \code{gamma} will be set to one.}
+
+\item{summary_fn}{What summary statistic to use when aggregating expression measurements.
+
+(Optional) Function that takes a one-dimensional vector of numeric and returns a single numeric.
+
+Defaults to the mean. Other good options include the median.}
 
 \item{inv_scale}{Inverse scale transformation. Default to exponential as dtangle assumes data has been logarithmically transformed.}
 }
@@ -29,12 +48,13 @@ pure_samples <- lapply(1:3, function(i) {
    which(truth[, i] == 1)
 })
 Y <- shen_orr_ex$data$log
-markers = find_markers(Y,pure_samples,data_type='microarray-gene',marker_method='ratio')$L
+markers = find_markers(Y=Y,pure_samples = pure_samples,
+data_type='microarray-gene',marker_method='ratio')$L
 K = length(pure_samples)
-n_choose = rep(20,K)
+n_markers = rep(20,K)
 mrkrs <- lapply(1:K, function(i) {
-       markers[[i]][1:n_choose[i]]
+       markers[[i]][1:n_markers[i]]
 })
-baseline = baseline_exprs(Y, pure_samples, mrkrs)
-phats <- est_phats(Y, mrkrs, baseline, gamma=.8)
+baseline = dtangle:::baseline_exprs(Y, pure_samples, mrkrs)
+phats <- dtangle:::est_phats(Y, mrkrs, baseline, gamma=.8)
 }

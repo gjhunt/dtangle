@@ -2,7 +2,7 @@
 title: "dtangle with scRNA-seq reference"
 author: "Saskia Freytag and Greg Hunt"
 date: "20/02/2018"
-output:
+output: 
   md_document:
     variant: markdown_github
 ---
@@ -73,13 +73,13 @@ We are finally ready to apply dtangle. The first step in running dtangle is to i
 
 After we have ranked our markers with find_markers we need to determine how many markers to use for each cell type. The simplest way to do this is to choose, say, the top 10% of all marker genes for each type.
 ```{r markers}
-marker_list = find_markers(y,pure_samples,data_type="rna-seq",marker_method='ratio')
+marker_list = find_markers(y,pure_samples=pure_samples,data_type="rna-seq",marker_method='ratio')
 
 q = .1
 quantiles = lapply(marker_list$V,function(x)quantile(x,1-q))
 K = length(pure_samples)
-n_choose = sapply(1:K,function(i){max(which(marker_list$V[[i]] > quantiles[[i]]))})
-n_choose
+n_markers = sapply(1:K,function(i){max(which(marker_list$V[[i]] > quantiles[[i]]))})
+n_markers
 
 ```
 Now that we have ranked the genes as markers for each type and chosen how many marker genes to use for each cell type we can run the dtangle deconvolution algorithm.
@@ -89,7 +89,7 @@ providing to the dtangle function the arguments:
 
 2. the list of `pure_samples`
 
-3. the number of markers to use for each cell type, `n_choose`
+3. the number of markers to use for each cell type, `n_markers`
 
 4. the data_type
 
@@ -97,7 +97,7 @@ providing to the dtangle function the arguments:
 
 ```{r deconvo}
 marks = marker_list$L
-dc <- dtangle(y, pure_samples, n_choose, data_type = 'microarray-gene', markers = marks)
+dc <- dtangle(y, pure_samples=pure_samples, n_markers=n_markers, data_type = 'microarray-gene', markers = marks)
 ```
 Finally, we can extract the proportion estimates for our mixture dataset.
 ```{r extract}

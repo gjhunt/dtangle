@@ -5,12 +5,6 @@ library(GEOquery)
 library(dtangle)
 
 gse53890 <- getGEO('GSE53890', GSEMatrix= TRUE)
-```
-
-    ## Warning in read.table(file = file, header = header, sep = sep, quote =
-    ## quote, : not all columns named in 'colClasses' exist
-
-``` r
 me <- as.matrix(exprs(gse53890[[1]]))
 
 load("NormalizedData_GSE67835.RData")
@@ -118,16 +112,16 @@ We are finally ready to apply dtangle. The first step in running dtangle is to i
 After we have ranked our markers with find\_markers we need to determine how many markers to use for each cell type. The simplest way to do this is to choose, say, the top 10% of all marker genes for each type.
 
 ``` r
-marker_list = find_markers(y,pure_samples,data_type="rna-seq",marker_method='ratio')
+marker_list = find_markers(y,pure_samples=pure_samples,data_type="rna-seq",marker_method='ratio')
 
 q = .1
 quantiles = lapply(marker_list$V,function(x)quantile(x,1-q))
 K = length(pure_samples)
-n_choose = sapply(1:K,function(i){max(which(marker_list$V[[i]] > quantiles[[i]]))})
-n_choose
+n_markers = sapply(1:K,function(i){max(which(marker_list$V[[i]] > quantiles[[i]]))})
+n_markers
 ```
 
-    ## [1] 277 263 394 327
+    ## [1] 275 261 392 325
 
 Now that we have ranked the genes as markers for each type and chosen how many marker genes to use for each cell type we can run the dtangle deconvolution algorithm. providing to the dtangle function the arguments:
 
@@ -135,7 +129,7 @@ Now that we have ranked the genes as markers for each type and chosen how many m
 
 2.  the list of `pure_samples`
 
-3.  the number of markers to use for each cell type, `n_choose`
+3.  the number of markers to use for each cell type, `n_markers`
 
 4.  the data\_type
 
@@ -143,7 +137,7 @@ Now that we have ranked the genes as markers for each type and chosen how many m
 
 ``` r
 marks = marker_list$L
-dc <- dtangle(y, pure_samples, n_choose, data_type = 'microarray-gene', markers = marks)
+dc <- dtangle(y, pure_samples=pure_samples, n_markers=n_markers, data_type = 'microarray-gene', markers = marks)
 ```
 
 Finally, we can extract the proportion estimates for our mixture dataset.
@@ -156,12 +150,12 @@ head(final_est)
 ```
 
     ##            oligodendrocytes  microglia   neurons astrocytes
-    ## GSM1303144       0.05017383 0.02762082 0.8702760 0.05192938
-    ## GSM1303145       0.05006188 0.02671951 0.8631044 0.06011422
-    ## GSM1303146       0.05592894 0.02831734 0.8317002 0.08405348
-    ## GSM1303147       0.07511751 0.03914810 0.7426999 0.14303447
-    ## GSM1303148       0.09237501 0.04335913 0.7703293 0.09393653
-    ## GSM1303149       0.04879993 0.02766075 0.8297813 0.09375802
+    ## GSM1303144       0.04982785 0.02725588 0.8697770 0.05313925
+    ## GSM1303145       0.04946921 0.02623444 0.8630468 0.06124953
+    ## GSM1303146       0.05543027 0.02787169 0.8308176 0.08588047
+    ## GSM1303147       0.07456747 0.03862733 0.7401753 0.14662994
+    ## GSM1303148       0.09184138 0.04280820 0.7692850 0.09606539
+    ## GSM1303149       0.04825578 0.02719847 0.8285277 0.09601801
 
 We can now plot the proportion estimates.
 
