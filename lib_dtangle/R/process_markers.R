@@ -34,6 +34,7 @@ process_markers <- function(Y, pure_samples, n_markers, data_type, gamma, marker
     mrkrs <- lapply(1:K, function(i) {
         markers[[i]][1:n_markers[i]]
     })
+    names(mrkrs) <- names(pure_samples)
     
     return(list(n_markers = n_markers, mrkrs = mrkrs, gamma = gamma))
 }

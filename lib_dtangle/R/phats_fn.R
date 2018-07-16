@@ -35,5 +35,7 @@ est_phats <- function(Y, markers, baseline_ests, gamma, summary_fn = mean, inv_s
         x/sum(x)
     }))
     
+    colnames(phats) <- names(markers)
+    
     return(phats)
 }

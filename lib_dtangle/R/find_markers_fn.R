@@ -92,6 +92,8 @@ find_markers <- function(Y, references = NULL, pure_samples = NULL, data_type = 
     M <- data.frame(t(M))
     colnames(M) <- c("top", "value")
     M$rn <- 1:N
+    rownames(M) <- colnames(Y)
+    M$Cell.Type <- names(pure_samples)[M$top]
     if (marker_method == "p.value") {
         diffmm <- find_markers(Y, pure_samples, data_type, gamma, marker_method = "diff")$M
         M$diff <- diffmm$value
@@ -102,11 +104,17 @@ find_markers <- function(Y, references = NULL, pure_samples = NULL, data_type = 
         sM <- iM[order(iM$top, -iM$value), ]
     }
     L <- lapply(1:K, function(i) {
-        sM[sM$top == i, "rn"]
+        vals <- sM[sM$top == i, "rn"]
+        names(vals) <- rownames(sM[sM$top == i, ])
+        return(vals)
     })
     V <- lapply(1:K, function(i) {
-        sM[sM$top == i, "value"]
+        vals <- sM[sM$top == i, "value"]
+        names(vals) <- rownames(sM[sM$top == i, ])
+        return(vals)
     })
+    names(L) <- names(pure_samples)
+    names(V) <- names(pure_samples)
     return(list(L = L, V = V, M = M, sM = sM))
 }
 
