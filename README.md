@@ -1,10 +1,15 @@
 ## dtangle: a method for cell-type deconvolution
 
-dtangle is an R package for cell type deconvolution. Currently it is available on [CRAN](https://cran.r-project.org/package=dtangle), on github, or from my umich box: [package](https://umich.box.com/v/dtanglepkg) ([source](https://umich.box.com/v/dtangle)).
 
-A package dtangle.data of benchmark deconvolution data sets can be found [here](https://umich.box.com/v/dtangledatapkg) ([source](https://umich.box.com/v/dtangledata)).
+dtangle is an R package for cell type deconvolution. Currently it is available on [CRAN](https://cran.r-project.org/package=dtangle), on github, or from my box: [package](https://wm1693.box.com/s/5chpeh1j1zll6v2h56g6g8jk7j51iwr5) ([source](https://wm1693.box.com/s/csb3xewvlldw1lweb843m85i6d7tda53)).
 
-The scripts for the analysis in our paper can be found [here](https://umich.box.com/v/dtangleanalysis).
+A package dtangle.data of benchmark deconvolution data sets can be found [here](https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub) ([source](https://wm1693.box.com/s/7u5mhph3io64dd8zrn4rdf9ce02368cu)).
+
+Our publication in Bioinformatics is accessible [here](https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/bty926/5165376?guestAccessKey=ac40b15d-bec0-48c1-be94-fbef567f63ec).
+
+The scripts for the analysis in our paper can be found [here](https://wm1693.box.com/s/7u5mhph3io64dd8zrn4rdf9ce02368cu).
+
+Our docker image for reproducing the analysis in paper can be found [here](https://hub.docker.com/r/gjhunt/dtangle/).
 
 # Vignettes
 
