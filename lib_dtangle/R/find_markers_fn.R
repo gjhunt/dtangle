@@ -95,7 +95,8 @@ find_markers <- function(Y, references = NULL, pure_samples = NULL, data_type = 
     rownames(M) <- colnames(Y)
     M$Cell.Type <- names(pure_samples)[M$top]
     if (marker_method == "p.value") {
-        diffmm <- find_markers(Y, pure_samples, data_type, gamma, marker_method = "diff")$M
+        diffmm <- find_markers(Y = Y, pure_samples = pure_samples, data_type = data_type, 
+            gamma = gamma, marker_method = "diff")$M
         M$diff <- diffmm$value
         iM <- M[stats::complete.cases(M), ]
         sM <- iM[order(iM$top, -iM$value, -iM$diff), ]

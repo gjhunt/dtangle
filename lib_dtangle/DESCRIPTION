@@ -6,7 +6,7 @@ Date: 2018-07-03
 Author: Gregory Hunt
 Maintainer: Gregory Hunt <gjhunt@umich.edu>
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Suggests:
     knitr,
     rmarkdown,

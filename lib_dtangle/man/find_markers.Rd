@@ -4,8 +4,8 @@
 \alias{find_markers}
 \title{Find marker genes for each cell type.}
 \usage{
-find_markers(Y, references = NULL, pure_samples = NULL, data_type = NULL,
-  gamma = NULL, marker_method = "ratio")
+find_markers(Y, references = NULL, pure_samples = NULL,
+  data_type = NULL, gamma = NULL, marker_method = "ratio")
 }
 \arguments{
 \item{Y}{Expression matrix.
