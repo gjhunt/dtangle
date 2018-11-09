@@ -3,8 +3,10 @@ title: "PBMC Deconvolution"
 author: "Greg Hunt"
 date: "June 6, 2018"
 output: 
-  md_document:
-    variant: markdown_github
+    md_document:
+      variant: markdown_github
+    pdf_document: default
+    html_document: default
 ---
 
 ```{r setup, include=FALSE}
