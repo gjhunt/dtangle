@@ -3,7 +3,7 @@
 
 dtangle is an R package for cell type deconvolution. Currently it is available on [CRAN](https://cran.r-project.org/package=dtangle), on github, or from my box: [package](https://wm1693.box.com/s/5chpeh1j1zll6v2h56g6g8jk7j51iwr5) ([source](https://wm1693.box.com/s/csb3xewvlldw1lweb843m85i6d7tda53)).
 
-A package dtangle.data of benchmark deconvolution data sets can be found [here](https://wm1693.box.com/shared/static/4ntz9tggttvrn2nkw96ddpt6x4o79ksu.gz) ([source](https://wm1693.box.com/s/wjiiblczvo5p5wdt5siml8i6cff87ic3).
+A package dtangle.data of benchmark deconvolution data sets can be found [here](https://wm1693.box.com/shared/static/4ntz9tggttvrn2nkw96ddpt6x4o79ksu.gz) ([source](https://wm1693.box.com/s/wjiiblczvo5p5wdt5siml8i6cff87ic3)).
 
 Our publication in Bioinformatics is accessible [here](https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/bty926/5165376?guestAccessKey=ac40b15d-bec0-48c1-be94-fbef567f63ec).
 
