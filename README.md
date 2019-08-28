@@ -1,6 +1,6 @@
 ## dtangle: a method for cell-type deconvolution
 
-<img src="scatter.jpg" width="35%" align="left">
+<img src="scatter.jpg" width="50%">
 
 **dtangle** is an R package for cell type deconvolution. Currently it is available on [CRAN](https://cran.r-project.org/package=dtangle), on github, or from my box: [package](https://wm1693.box.com/s/5chpeh1j1zll6v2h56g6g8jk7j51iwr5) ([source](https://wm1693.box.com/s/csb3xewvlldw1lweb843m85i6d7tda53)).
 
@@ -11,11 +11,6 @@ Our publication in Bioinformatics is accessible [here](https://academic.oup.com/
 The scripts for the analysis in our paper can be found [here](https://wm1693.box.com/s/7u5mhph3io64dd8zrn4rdf9ce02368cu).
 
 Our docker image for reproducing the analysis in paper can be found [here](https://hub.docker.com/r/gjhunt/dtangle/).
-
-&nbsp;
-
-&nbsp;
-
 
 # Vignettes
 
