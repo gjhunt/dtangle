@@ -1,3 +1,5 @@
+<img src="scatter.jpg" width="50%">
+
 ## dtangle: a method for cell-type deconvolution
 
 **dtangle** is an R package for cell type deconvolution. Currently it is available on [CRAN](https://cran.r-project.org/package=dtangle), on github, or from my box: [package](https://wm1693.box.com/s/5chpeh1j1zll6v2h56g6g8jk7j51iwr5) ([source](https://wm1693.box.com/s/csb3xewvlldw1lweb843m85i6d7tda53)).
@@ -15,5 +17,3 @@ Our docker image for reproducing the analysis in paper can be found [here](https
 * Bulk RNA-seq and microarrays: [here](vign/basic-deconvolution.md) ([html](vign/basic-deconvolution.html) [rmd](https://github.com/gjhunt/dtangle/blob/master/vign/basic-deconvolution.Rmd))
 * Using single-cell RNA-seq as references: [here](vign/sc_vignette.md) ([html](https://github.com/gjhunt/dtangle/blob/master/vign/sc_vignette.html) [rmd](https://github.com/gjhunt/dtangle/blob/master/vign/sc_vignette.Rmd))
 * PBMC microarray deconvolution: [here](vign/blood.md) ([html](https://github.com/gjhunt/dtangle/blob/master/vign/blood.html) [rmd](https://github.com/gjhunt/dtangle/blob/master/vign/blood.Rmd))
-
-<img src="scatter.jpg" width="50%">
