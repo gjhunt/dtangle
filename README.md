@@ -1,4 +1,4 @@
-<img src="scatter.jpg" width="50%">
+<img src="scatter.jpg" width="100%">
 
 ## dtangle: a method for cell-type deconvolution
 
