@@ -1,7 +1,7 @@
 The Data
 ========
 
-In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the `dtangle` package under the name `shen_orr_ex`. Alternatively, we can access this and other data sets data set through the supplementary `dtangle.data` package we have made available [here](https://umich.box.com/v/dtangledatapkg). More information about the data set is available as part of the `R` help, `?shen_orr_ex`. First, load up the data set.
+In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the `dtangle` package under the name `shen_orr_ex`. Alternatively, we can access this and other data sets data set through the supplementary `dtangle.data` package we have made available [here](https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub). More information about the data set is available as part of the `R` help, `?shen_orr_ex`. First, load up the data set.
 
 ``` r
 library('dtangle')
@@ -187,7 +187,8 @@ The argument n\_markers specifies how many marker genes to use. If unspecified t
 dt_out$n_markers
 ```
 
-    ## [1] 20 20 20
+    ## Liver Brain  Lung 
+    ##    20    20    20
 
 The number of marker genes can be explicitly specified by setting n\_markers:
 
@@ -309,7 +310,7 @@ dt_out = dtangle(Y = mixture_samples,references = ref_reduced,summary_fn=median)
 head(dt_out$estimates)
 ```
 
-    ##                 [,1]       [,2]      [,3]
+    ##                Liver      Brain      Lung
     ## GSM495218 0.05229139 0.29300675 0.6547019
     ## GSM495219 0.05505613 0.29357471 0.6513692
     ## GSM495220 0.05398451 0.29489946 0.6511160
@@ -322,7 +323,7 @@ dt_out = dtangle(Y = mixture_samples,references = ref_reduced,summary_fn=mean)
 head(dt_out$estimates)
 ```
 
-    ##                 [,1]       [,2]      [,3]
+    ##                Liver      Brain      Lung
     ## GSM495218 0.04807655 0.30980298 0.6421205
     ## GSM495219 0.05213084 0.30896051 0.6389086
     ## GSM495220 0.05029034 0.30536233 0.6443473

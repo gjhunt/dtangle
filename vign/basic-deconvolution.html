@@ -11,7 +11,7 @@
 
 <meta name="author" content="Greg Hunt" />
 
-<meta name="date" content="2018-07-03" />
+<meta name="date" content="2018-11-09" />
 
 <title>Basic Deconvolution using dtangle</title>
 
@@ -92,6 +92,9 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
 }
@@ -121,14 +124,14 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Basic Deconvolution using dtangle</h1>
 <h4 class="author"><em>Greg Hunt</em></h4>
-<h4 class="date"><em>2018-07-03</em></h4>
+<h4 class="date"><em>2018-11-09</em></h4>
 
 </div>
 
 
 <div id="the-data" class="section level1">
 <h1>The Data</h1>
-<p>In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by <a href="https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html">Shen-Orr et al</a>. This is available on GEO with accession <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830">GSE19830</a>. The data set we will work with is subset of the Shen-Orr data and is included in the <code>dtangle</code> package under the name <code>shen_orr_ex</code>. Alternatively, we can access this and other data sets data set through the supplementary <code>dtangle.data</code> package we have made available <a href="https://umich.box.com/v/dtangledatapkg">here</a>. More information about the data set is available as part of the <code>R</code> help, <code>?shen_orr_ex</code>. First, load up the data set.</p>
+<p>In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by <a href="https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html">Shen-Orr et al</a>. This is available on GEO with accession <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830">GSE19830</a>. The data set we will work with is subset of the Shen-Orr data and is included in the <code>dtangle</code> package under the name <code>shen_orr_ex</code>. Alternatively, we can access this and other data sets data set through the supplementary <code>dtangle.data</code> package we have made available <a href="https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub">here</a>. More information about the data set is available as part of the <code>R</code> help, <code>?shen_orr_ex</code>. First, load up the data set.</p>
 <pre class="r"><code>library('dtangle')
 names(shen_orr_ex)</code></pre>
 <pre><code>## [1] &quot;data&quot;       &quot;annotation&quot; &quot;name&quot;</code></pre>
@@ -259,7 +262,8 @@ matplot(mixture_mixture_proportions,dt_out$estimates, xlim = c(0,1),ylim=c(0,1),
 <p>the default is to use “ratio”.</p>
 <p>The argument n_markers specifies how many marker genes to use. If unspecified then dtangle uses the top 10% of genes (as ranked according to marker_method) as markers.</p>
 <pre class="r"><code>dt_out$n_markers</code></pre>
-<pre><code>## [1] 20 20 20</code></pre>
+<pre><code>## Liver Brain  Lung 
+##    20    20    20</code></pre>
 <p>The number of marker genes can be explicitly specified by setting n_markers:</p>
 <pre class="r"><code>dt_out = dtangle(Y=mixture_samples, references = ref_reduced,marker_method = &quot;diff&quot;,n_markers=100)
 
@@ -327,7 +331,7 @@ names(mrkrs)</code></pre>
 <p>There is a final optional parameter summary_fn which controls how dtangle aggregates the gene expressions for estimation. dtangle is a very robust algorithm and so the default summary function is the mean. One can specify the median as a more robust option, or any other summary statistic if so they desire. We recommend either the mean or the median.</p>
 <pre class="r"><code>dt_out = dtangle(Y = mixture_samples,references = ref_reduced,summary_fn=median)
 head(dt_out$estimates)</code></pre>
-<pre><code>##                 [,1]       [,2]      [,3]
+<pre><code>##                Liver      Brain      Lung
 ## GSM495218 0.05229139 0.29300675 0.6547019
 ## GSM495219 0.05505613 0.29357471 0.6513692
 ## GSM495220 0.05398451 0.29489946 0.6511160
@@ -336,7 +340,7 @@ head(dt_out$estimates)</code></pre>
 ## GSM495223 0.64332527 0.07615796 0.2805168</code></pre>
 <pre class="r"><code>dt_out = dtangle(Y = mixture_samples,references = ref_reduced,summary_fn=mean)
 head(dt_out$estimates)</code></pre>
-<pre><code>##                 [,1]       [,2]      [,3]
+<pre><code>##                Liver      Brain      Lung
 ## GSM495218 0.04807655 0.30980298 0.6421205
 ## GSM495219 0.05213084 0.30896051 0.6389086
 ## GSM495220 0.05029034 0.30536233 0.6443473

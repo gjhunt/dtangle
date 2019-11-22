@@ -2,13 +2,13 @@
 title: "Basic Deconvolution using dtangle"
 author: "Greg Hunt"
 date: "`r Sys.Date()`"
-output: 
-  md_document:
-    variant: markdown_github
-vignette: >
-  %\VignetteIndexEntry{Basic Deconvolution}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output:
+    md_document:
+      variant: markdown_github
+    pdf_document: default
+    html_document: default
+vignette: |
+  %\VignetteIndexEntry{Basic Deconvolution} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
