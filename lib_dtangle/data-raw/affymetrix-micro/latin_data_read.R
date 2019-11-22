@@ -1,8 +1,7 @@
 ## ---- latinread
 library("affy")
 
-data_top_dir <- "/home/greg/Dropbox/work/research/2016/latin_data/"
-affy_batch <- ReadAffy(celfile.path = data_top_dir)
+affy_batch <- ReadAffy(celfile.path = "latin_data")
 
 ## probe-level data
 ips <- indexProbes(affy_batch, "both")

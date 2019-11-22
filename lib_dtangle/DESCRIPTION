@@ -1,16 +1,19 @@
 Package: dtangle
 Title: Cell Type Deconvolution from Gene Expressions
-Version: 0.3.1
+Version: 2.0.6
 Description: Deconvolving cell types from high-throughput gene profiling data. 
-Date: 2018-07-03
-Author: Gregory Hunt
-Maintainer: Gregory Hunt <gjhunt@umich.edu>
+Date: 2019-08-05
+Authors@R: c(person("Gregory", "Hunt", email = "ghunt@wm.edu", role = c("aut", "cre")),
+	person("Johann", "Gagnon-Bartsch", email = "johanngb@umich.edu", role = c("aut")))	
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
+Imports:
+    DEoptimR,
+    hitandrun
 Suggests:
     knitr,
     rmarkdown,
-    testthat
+    testthat	
 VignetteBuilder: knitr
 License: GPL-3
 Depends: R(>= 2.10.0)

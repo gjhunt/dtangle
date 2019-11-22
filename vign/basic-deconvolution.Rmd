@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # The Data
 
-In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://umich.box.com/v/dtangledatapkg). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
+In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
 ```{r}
 library('dtangle')
 names(shen_orr_ex)
