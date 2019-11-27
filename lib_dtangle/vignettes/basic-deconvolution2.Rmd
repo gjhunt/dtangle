@@ -17,13 +17,13 @@ In this vignette we will deconvolve a simple dataset using "dtangle2." This vign
 
 # The Data
 
-In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this and other data sets data set through the supplementary ``dtangle.data`` package we have made available [here](https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
+In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is a subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this data set and other data sets through the supplementary ``dtangle.data`` package we have made available [here](https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
 ```{r}
 library('dtangle')
 names(shen_orr_ex)
 ```
 
-In this data set rat brain, liver and lung cells have been mixed together in various proportions the resulting mixtures were analyzed with DNA microarrays. The mixing proportions are encoded in the mixture matrix
+In this data set, rat brain, liver and lung cells have been mixed together in various proportions. The resulting mixtures were analyzed with DNA microarrays. The mixing proportions are encoded in the mixture matrix
 ```{r}
 head(shen_orr_ex$annotation$mixture)
 ```
@@ -174,7 +174,7 @@ dt_out = dtangle2(Y = mixture_samples,references = ref_reduced,markers=mrkrs,n_m
 
 # inv_scale: supplying the correct scale data to dtangle2
 
-Notice that we have been working with log2-scale gene expressions. If not set by the user, dtangle2 assume log2 transformed expressions. However we may choose to work with other transformations of gene expressions. In this case, one needs to tell dtangle2 how to transform this data back to the linear-scale. This is provided to the argument "inv_scale". 
+Notice that we have been working with log2-scale gene expressions. If not set by the user, dtangle2 assumes log2 transformed expressions. However we may choose to work with other transformations of gene expressions. In this case, one needs to tell dtangle2 how to transform this data back to the linear-scale. This is provided to the argument "inv_scale". 
 
 Let us artificially create linear-scale gene expression data by un-doing the log2 transformation applied: 
 ```{r}
@@ -182,7 +182,7 @@ lin_scale_mix = 2^mixture_samples
 lin_scale_ref = 2^ref_reduced
 ```
 
-Since this data is already on the linear scale, the transformation to get this data to the linear scale is simply the identity transformation. Thus we can deconvolve this data using dtangle2 passing identity to the inv_scale argument
+Since this data is already on the linear scale, the transformation to get this data to the linear scale is simply the identity transformation. Thus we can deconvolve this data using dtangle2 passing the identity function to the inv_scale argument
 ```{r}
 dt_out = dtangle2(Y=lin_scale_mix,references = lin_scale_ref,inv_scale = base::identity,
                   seed=1234,markers = mrkrs$L)

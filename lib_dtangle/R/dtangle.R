@@ -8,7 +8,7 @@
 #'
 #' (Optional) Two-dimensional numeric. Must implement \code{as.matrix}. Must have same number of columns as \code{Y}. Columns must correspond to columns of \code{Y}.
 #'
-#' Each row contains expression measurements for a reference profile of a particular cell type. Columns contain measurements of reference profiles of a gene. Optionally may merge this matrix with \code{Y} and use \code{pure_samples} to indicate which rows of \code{Y} are pure samples. If \code{pure_samples} is not specified \code{references} must be specified. In this case each row of \code{references} is assumed to be a distinct cell-type. If both \code{pure_samples} and \code{references} are specified then \code{pure_samples} specifies to which cell-type each row of \code{references} corresponds. 
+#' Each row contains expression measurements for a reference profile of a particular cell type. Columns contain measurements of reference profiles of a gene. Optionally may merge this matrix with \code{Y} and use \code{pure_samples} to indicate which rows of \code{Y} are pure samples. If \code{pure_samples} is not specified \code{references} must be specified. In this case each row of \code{references} is assumed to be a distinct cell-type. If both \code{pure_samples} and \code{references} are specified then multiple rows of \code{references} may refer be the same cell type, and \code{pure_samples} specifies to which cell-type each row of \code{references} corresponds.
 #' @param pure_samples The pure sample indicies.
 #'
 #' (Optional) List of one-dimensional integer. Must implement \code{as.list}.

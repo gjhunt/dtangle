@@ -1,6 +1,6 @@
 Package: dtangle
 Title: Cell Type Deconvolution from Gene Expressions
-Version: 2.0.6
+Version: 2.0.7
 Description: Deconvolving cell types from high-throughput gene profiling data. 
 Date: 2019-08-05
 Authors@R: c(person("Gregory", "Hunt", email = "ghunt@wm.edu", role = c("aut", "cre")),
@@ -9,7 +9,6 @@ LazyData: true
 RoxygenNote: 6.1.1
 Imports:
     DEoptimR,
-    hitandrun
 Suggests:
     knitr,
     rmarkdown,

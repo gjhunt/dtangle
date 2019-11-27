@@ -106,12 +106,9 @@
 #' Y <- shen_orr_ex$data$log
 #' n_markers = 20
 #'
-#' dtangle(Y, pure_samples = pure_samples,
-#' n_markers=n_markers,data_type='microarray-gene',marker_method = 'ratio')
+#' dtangle2(Y, pure_samples = pure_samples,
+#' n_markers=n_markers)
 #'
-#' n_markers = c(10,11,12)
-#' dtangle(Y, pure_samples=pure_samples,
-#' n_markers=n_markers,gamma=.8,marker_method = 'regression')
 #' @seealso \code{\link{find_markers}}
 #' @export
 dtangle2 <- function(Y, references = NULL, pure_samples = NULL, n_markers = NULL, 
@@ -268,7 +265,7 @@ optim_solve_deoptimr <- function(x, Z, loss, loss_deriv, W = NULL, optim_opts = 
         Kall <- length(p0)
         fs <- loss(p0)
         ADD <- cbind(diag(1, Kall), rep(1/Kall, Kall))
-        RAND <- hitandrun::simplex.sample(Kall, optim_opts$ninit)$samples
+        RAND <- simplex_sample(N = optim_opts$ninit, Kall)
         ADD <- cbind(ADD, t(RAND))
         list(opt_out = DEoptimR::JDEoptim(lower = rep(0, Kall), upper = rep(1, Kall), 
             fn = loss, trace = verbose, triter = optim_opts$triter, maxiter = optim_opts$maxiter, 

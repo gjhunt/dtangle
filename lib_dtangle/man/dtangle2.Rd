@@ -132,12 +132,9 @@ pure_samples <- lapply(1:3, function(i) {
 Y <- shen_orr_ex$data$log
 n_markers = 20
 
-dtangle(Y, pure_samples = pure_samples,
-n_markers=n_markers,data_type='microarray-gene',marker_method = 'ratio')
+dtangle2(Y, pure_samples = pure_samples,
+n_markers=n_markers)
 
-n_markers = c(10,11,12)
-dtangle(Y, pure_samples=pure_samples,
-n_markers=n_markers,gamma=.8,marker_method = 'regression')
 }
 \seealso{
 \code{\link{find_markers}}
