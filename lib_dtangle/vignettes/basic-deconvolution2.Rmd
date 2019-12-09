@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE,cache.path='c/',fig.path='fig/')
 ```
 
 In this vignette we will deconvolve a simple dataset using "dtangle2." This vignette will follow our previous vignette on "dtangle" closely.
@@ -18,20 +18,20 @@ In this vignette we will deconvolve a simple dataset using "dtangle2." This vign
 # The Data
 
 In this vignette we will work through a simple example of deconvolving cell type proportions from DNA microarray data. We work with a data set created from rats and introduced by [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html). This is available on GEO with accession [GSE19830](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19830). The data set we will work with is a subset of the Shen-Orr data and is included in the ``dtangle`` package under the name ``shen_orr_ex``. Alternatively, we can access this data set and other data sets through the supplementary ``dtangle.data`` package we have made available [here](https://wm1693.box.com/s/np66a1wnhngafoawsiu665sjb7kye2ub). More information about the data set is available as part of the ``R`` help, ``?shen_orr_ex``. First, load up the data set. 
-```{r}
+```{r,cache=TRUE}
 library('dtangle')
 names(shen_orr_ex)
 ```
 
 In this data set, rat brain, liver and lung cells have been mixed together in various proportions. The resulting mixtures were analyzed with DNA microarrays. The mixing proportions are encoded in the mixture matrix
-```{r}
+```{r,cache=TRUE}
 head(shen_orr_ex$annotation$mixture)
 ```
 Each row of this matrix is a sample and each column gives the mixing proportions of the cell types in each sample. 
 
-The RMA-summarized gene expression data generated as part of the Shen-Orr experiment is accessible under ``data$log``,
+The RMA-summarized gene expression data generated as part of the Shen-Orr experiment is accessible under ``data$log``:
 
-```{r}
+```{r,cache=TRUE}
 Y <- shen_orr_ex$data$log
 Y[1:4,1:4]
 ```
@@ -46,7 +46,7 @@ The arguments to dtangle2 can be grouped as follows:
 3. inv_scale: making sure the data is on the right scale for dtangle2
 
 Other arguments to dtangle2 may be found in the help documentation
-```{r}
+```{r,cache=TRUE}
 ?dtangle2
 ```
 
@@ -54,34 +54,34 @@ Other arguments to dtangle2 may be found in the help documentation
 
 In order to deconvolve gene expression data from mixture samples dtangle2 requires references of the cell-types to be deconvolved. The mixture gene expressions and reference gene expressions are given to dtangle2 using the arguments Y, references, and pure\_samples.
 
-Consider, again, our data from [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html) as an example. 
-```{r}
+Consider, again, our data from [Shen-Orr et al](https://www.nature.com/nmeth/journal/v7/n4/abs/nmeth.1439.html) as an example. For speed, we're going to subset to a very small number of genes: 
+```{r,cache=TRUE}
 library('dtangle')
-data = shen_orr_ex$data$log
+data = shen_orr_ex$data$log[,c(1:10,201:210,401:410)]
 mixture_proportions = shen_orr_ex$annotation$mixture
 ```
 looking at the mixture proportions we can see that the first nine samples are pure reference samples of the three cell types and the remaining samples are mixture samples of the cell types
-```{r}
+```{r,cache=TRUE}
 mixture_proportions
 ```
 We want to use these reference samples to deconvolve the remaining mixture samples. This can be done in a couple of ways: 
 
 1. We can provide Y and pure\_samples to dtangle2. Here Y will be the combined matrix of reference and mixture samples and pure\_samples will tell dtangle2 which samples (rows of Y) are reference samples and (by elimination) which samples are mixture samples we wish to deconvolve. 
-```{r}
+```{r,cache=TRUE}
 pure_samples = list(Liver=c(1,2,3),Brain=c(4,5,6),Lung=c(7,8,9))
 
 dt_out = dtangle2(Y=data, pure_samples = pure_samples)
 ```
 
 We can get the estiamtes by accessing the "estimates" property of the result, and plot them:
-```{r}
+```{r,cache=TRUE}
 true_proportions = mixture_proportions[-(1:9),]
 matplot(true_proportions,dt_out$estimates, xlim = c(0,1),ylim=c(0,1),xlab="Truth",ylab="Estimates")
 ```
 
 
 2. We can instead split the data into Y as just the matrix of mixture samples and references as the matrix of reference expressions. 
-```{r}
+```{r,cache=TRUE}
 mixture_samples = data[-(1:9),]
 reference_samples = data[1:9,]
 
@@ -93,7 +93,7 @@ matplot(true_proportions,dt_out$estimates, xlim = c(0,1),ylim=c(0,1),xlab="Truth
 Now the variable pure\_samples tells dtangle2 to which cell type each of the the rows of the references matrix corresponds to. 
 
 In this example we still needed the variable pure\_samples because our reference expression matrix contained multiple reference profiles for each cell type. Often one only has a reference expression matrix with one (typically average) expression profile per cell type. In this case we don't need the pure\_samples argument:
-```{r}
+```{r,cache=TRUE}
 ref_reduced = t(sapply(pure_samples,function(x)colMeans(reference_samples[x,,drop=FALSE])))
 
 dt_out = dtangle2(Y=mixture_samples, reference=ref_reduced)
@@ -107,35 +107,35 @@ Central to dtangle2 is finding marker genes for each cell type. Markers may eith
 
 ## Letting dtangle2 determine the marker genes. 
 If we do not specify the argument markers then dtangle2 automatically determines marker genes: 
-```{r}
+```{r,cache=TRUE}
 dt_out = dtangle2(Y=mixture_samples, references = ref_reduced)
 ```
 
 we can change the way that dtangle2 finds marker genes using the marker\_method argument: 
-```{r}
+```{r,cache=TRUE}
 dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,marker_method = "diff")
 ```
 the default is to use "ratio". More options may be found in the R help documentation.
 
 The argument n\_markers specifies how many marker genes to use. If unspecified then dtangle2 uses the top 10\% of genes (as ranked according to marker\_method) as markers. 
-```{r}
+```{r,cache=TRUE}
 dt_out$n_markers
 ```
 The number of marker genes can be explicitly specified by setting n\_markers: 
-```{r}
-dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=100)
+```{r,cache=TRUE}
+dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=3)
 
 dt_out$n_markers
 ```
 if just a single integer is specified then all genes us that number of marker genes. Alternatively we can specify a vector of integers to specify a number of marker genes individually for each cell type:
-```{r}
-dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=c(100,150,50))
+```{r,cache=TRUE}
+dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=c(1,2,3))
 
 dt_out$n_markers
 ```
 
 we can also, in a similar fashion, pass a percentage (or vector of percentages) to n\_markers which will then use that percentage of the ranked marker genes for each cell type: 
-```{r}
+```{r,cache=TRUE}
 dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,marker_method = "diff",n_markers=.075)
 
 dt_out$n_markers
@@ -148,10 +148,10 @@ dt_out$n_markers
 ## Specifying the marker genes explicitly. 
 
 Instead of letting dtangle2 determine the marker genes we can instead explicitly pass a list of markers to dtangle2 specifying the marker genes,
-```{r}
-marker_genes = list(c(120,253,316),
-                    c(180,429,14),
-                    c(1,109,206))
+```{r,cache=TRUE}
+marker_genes = list(c(1,2,3),
+                    c(4,5,6),
+                    c(7,8,9))
 
 dt_out = dtangle2(Y=mixture_samples, references = ref_reduced,markers=marker_genes)
 dt_out$n_markers
@@ -161,14 +161,14 @@ the format of the list is precisely the same format as returned in the markers e
 ## How dtangle2 finds markers
 
 dtangle2 finds the marker genes by using the find\_markers function.
-```{r}
+```{r,cache=TRUE}
 mrkrs = find_markers(Y=mixture_samples, references = ref_reduced)
 names(mrkrs)
 ```
 which returns a list with four elements L which contains all genes putatively assigned to a cell type they mark, V which contains the ranking values by which the elements of L are ordered, M and sM which are the matrix and sorted matrix used to create V and L. 
 
 We can pass either the entire list or just the L list to dtangle2 as markers and re-create how dtangle2 automatically chooses markers: 
-```{r}
+```{r,cache=TRUE}
 dt_out = dtangle2(Y = mixture_samples,references = ref_reduced,markers=mrkrs,n_markers=.1)
 ```
 
@@ -177,20 +177,20 @@ dt_out = dtangle2(Y = mixture_samples,references = ref_reduced,markers=mrkrs,n_m
 Notice that we have been working with log2-scale gene expressions. If not set by the user, dtangle2 assumes log2 transformed expressions. However we may choose to work with other transformations of gene expressions. In this case, one needs to tell dtangle2 how to transform this data back to the linear-scale. This is provided to the argument "inv_scale". 
 
 Let us artificially create linear-scale gene expression data by un-doing the log2 transformation applied: 
-```{r}
+```{r,cache=TRUE}
 lin_scale_mix = 2^mixture_samples
 lin_scale_ref = 2^ref_reduced
 ```
 
 Since this data is already on the linear scale, the transformation to get this data to the linear scale is simply the identity transformation. Thus we can deconvolve this data using dtangle2 passing the identity function to the inv_scale argument
-```{r}
+```{r,cache=TRUE}
 dt_out = dtangle2(Y=lin_scale_mix,references = lin_scale_ref,inv_scale = base::identity,
                   seed=1234,markers = mrkrs$L)
 head(dt_out$estimates)
 ```
 
 Alternatively, for example, we could work with arc-hyperbolic-sine transformed data with dtangle2, telling dtangle that the transformation of this data back to the linear scale is the hyperbolic-sine function:
-```{r}
+```{r,cache=TRUE}
 ahs_scale_mix = asinh(lin_scale_mix)
 ahs_scale_ref = asinh(lin_scale_ref)
 

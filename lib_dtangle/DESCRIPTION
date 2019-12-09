@@ -1,8 +1,8 @@
 Package: dtangle
 Title: Cell Type Deconvolution from Gene Expressions
-Version: 2.0.7
-Description: Deconvolving cell types from high-throughput gene profiling data. 
-Date: 2019-08-05
+Version: 2.0.9
+Description: Deconvolving cell types from high-throughput gene profiling data. For more information on dtangle see Hunt et al. (2019) <doi:10.1093/bioinformatics/bty926>.
+Date: 2019-11-29
 Authors@R: c(person("Gregory", "Hunt", email = "ghunt@wm.edu", role = c("aut", "cre")),
 	person("Johann", "Gagnon-Bartsch", email = "johanngb@umich.edu", role = c("aut")))	
 LazyData: true
@@ -15,4 +15,4 @@ Suggests:
     testthat	
 VignetteBuilder: knitr
 License: GPL-3
-Depends: R(>= 2.10.0)
+Depends: R(>= 3.5.0)

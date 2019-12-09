@@ -125,6 +125,7 @@ List.
 Deconvolve cell type mixing proportions from gene expression data.
 }
 \examples{
+\donttest{
 truth = shen_orr_ex$annotation$mixture
 pure_samples <- lapply(1:3, function(i) {
    which(truth[, i] == 1)
@@ -134,6 +135,7 @@ n_markers = 20
 
 dtangle2(Y, pure_samples = pure_samples,
 n_markers=n_markers)
+}
 
 }
 \seealso{

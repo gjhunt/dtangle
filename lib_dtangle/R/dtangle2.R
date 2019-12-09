@@ -99,6 +99,7 @@
 #' }
 #' }
 #' @examples
+#' \donttest{
 #' truth = shen_orr_ex$annotation$mixture
 #' pure_samples <- lapply(1:3, function(i) {
 #'    which(truth[, i] == 1)
@@ -108,7 +109,8 @@
 #'
 #' dtangle2(Y, pure_samples = pure_samples,
 #' n_markers=n_markers)
-#'
+#' }
+#' 
 #' @seealso \code{\link{find_markers}}
 #' @export
 dtangle2 <- function(Y, references = NULL, pure_samples = NULL, n_markers = NULL, 
