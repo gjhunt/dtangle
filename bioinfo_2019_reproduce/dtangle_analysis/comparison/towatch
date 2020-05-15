@@ -1,0 +1,2 @@
+#!/bin/bash
+tail -n 5 `ls -t | grep ".Rout" | head -n 3 | sort`
