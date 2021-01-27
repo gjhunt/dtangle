@@ -2,6 +2,8 @@
 
 # dtangle: a method for cell-type deconvolution
 
+**we recommend using our updated deconvolution approach hspe, available [here](gjhunt.github.io/hspe)**
+
 ## Software
 
 **dtangle** is an R package for cell type deconvolution.
@@ -16,15 +18,7 @@
 
 ## Papers
 
-### 1. "The Role of Scale in the Estimation of Cell-type Proportions" (Pre-print)
-
-* Our **new pre-print** on the role of scale in cell-type deconvolution is accessible [here](https://www.biorxiv.org/content/10.1101/857805v1)
-
-* Our **docker image** for reproducing the analysis in paper can be found [here](https://hub.docker.com/r/gjhunt/hybriddeconv).
-
-* The scripts for the analysis the manuscript can be found [here]()
-
-### 2. "dtangle: accurate and robust cell type deconvolution" Bioinformatics (2019) 
+### 1. "dtangle: accurate and robust cell type deconvolution" Bioinformatics (2019) 
 
 * Our **publication** in Bioinformatics is accessible [here](https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/bty926/5165376?guestAccessKey=ac40b15d-bec0-48c1-be94-fbef567f63ec).
 
