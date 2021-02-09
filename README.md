@@ -2,7 +2,7 @@
 
 # dtangle: a method for cell-type deconvolution
 
-**we recommend using our updated deconvolution approach hspe, available [here](gjhunt.github.io/hspe)**
+**we recommend using our updated deconvolution approach hspe, available [here](https://gjhunt.github.io/hspe)**
 
 ## Software
 
